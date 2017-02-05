@@ -1,4 +1,5 @@
-package main
+// Package openbd is API wrapper library for openBD: https://openbd.jp/
+package openbd
 
 import (
 	"encoding/json"
@@ -28,32 +29,32 @@ var (
 
 // OpenBD has api request funcs
 type OpenBD struct {
-	client *http.Client
+	Client *http.Client
 }
 
 // New returns OpenBD
 func New() OpenBD {
 	return OpenBD{
-		client: http.DefaultClient,
+		Client: http.DefaultClient,
 	}
 }
 
 // Get requests single Book data
-func (o OpenBD) Get(isbn string) (Book, error) {
+func (o *OpenBD) Get(isbn string) (*Book, error) {
 	u := createGetURL(isbn)
 	body, err := o.requestGet(u)
 	if err != nil {
-		return Book{}, errRequest
+		return nil, errRequest
 	}
 	b, err := mapToBook(body)
 	if err != nil {
-		return Book{}, err
+		return nil, err
 	}
 	return b, nil
 }
 
 // GetBooks requests multiple Book data
-func (o OpenBD) GetBooks(isbns []string) ([]Book, error) {
+func (o *OpenBD) GetBooks(isbns []string) (*[]Book, error) {
 	if len(isbns) > maxForGetRequest {
 		return nil, errOverGetMax
 	}
@@ -69,8 +70,8 @@ func (o OpenBD) GetBooks(isbns []string) ([]Book, error) {
 	return b, nil
 }
 
-func (o OpenBD) requestGet(url string) ([]byte, error) {
-	resp, err := o.client.Get(url)
+func (o *OpenBD) requestGet(url string) ([]byte, error) {
+	resp, err := o.Client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -86,20 +87,20 @@ func createISBNsURL(isbns []string) string {
 	return getAPI + "?isbn=" + strings.Join(isbns, ",")
 }
 
-func mapToBook(response []byte) (b Book, err error) {
+func mapToBook(response []byte) (b *Book, err error) {
 	var books []Book
 	if err = json.Unmarshal(response, &books); err != nil {
 		return
 	}
-	b = books[0]
+	b = &books[0]
 	if !b.IsValidData() {
 		err = errNoData
 	}
 	return
 }
 
-func mapToBooks(response []byte) ([]Book, error) {
+func mapToBooks(response []byte) (*[]Book, error) {
 	var b []Book
 	err := json.Unmarshal(response, &b)
-	return b, err
+	return &b, err
 }

@@ -1,4 +1,4 @@
-package main
+package openbd
 
 import (
 	"errors"
@@ -7,27 +7,27 @@ import (
 )
 
 // IsValidData validates book has valid data
-func (b Book) IsValidData() bool {
+func (b *Book) IsValidData() bool {
 	return b.GetISBN() != ""
 }
 
 // GetPublisher returns Publisher
-func (b Book) GetPublisher() string {
+func (b *Book) GetPublisher() string {
 	return b.Summary.Publisher
 }
 
 // GetISBN returns ISBN
-func (b Book) GetISBN() string {
+func (b *Book) GetISBN() string {
 	return b.Summary.ISBN
 }
 
 // GetPubdateStr returns PubdateStr
-func (b Book) GetPubdateStr() string {
+func (b *Book) GetPubdateStr() string {
 	return b.Summary.Pubdate
 }
 
 // GetPubdate returns Pubdate
-func (b Book) GetPubdate() (d time.Time, err error) {
+func (b *Book) GetPubdate() (d time.Time, err error) {
 	p := b.Summary.Pubdate
 	if p == "" {
 		err = errors.New("no pubdate")
@@ -47,32 +47,32 @@ func (b Book) GetPubdate() (d time.Time, err error) {
 }
 
 // GetTitle returns Title
-func (b Book) GetTitle() string {
+func (b *Book) GetTitle() string {
 	return b.Summary.Title
 }
 
 // GetSeries returns Series
-func (b Book) GetSeries() string {
+func (b *Book) GetSeries() string {
 	return b.Summary.Series
 }
 
 // GetAuthor returns Author
-func (b Book) GetAuthor() string {
+func (b *Book) GetAuthor() string {
 	return b.Summary.Author
 }
 
 // GetCover returns Cover
-func (b Book) GetCover() string {
+func (b *Book) GetCover() string {
 	return b.Summary.Cover
 }
 
 // GetVolume returns Volume
-func (b Book) GetVolume() string {
+func (b *Book) GetVolume() string {
 	return b.Summary.Volume
 }
 
 // GetImageLink returns ImageLink
-func (b Book) GetImageLink() (l string) {
+func (b *Book) GetImageLink() (l string) {
 	if b.Summary.Cover != "" {
 		l = b.Summary.Cover
 		return
@@ -91,7 +91,7 @@ func (b Book) GetImageLink() (l string) {
 }
 
 // GetDescription returns Description
-func (b Book) GetDescription() string {
+func (b *Book) GetDescription() string {
 	tcs := b.Onix.CollateralDetail.TextContent
 	d := ""
 	for _, tc := range tcs {
@@ -106,7 +106,7 @@ func (b Book) GetDescription() string {
 }
 
 // GetTableOfContents returns TableOfContents
-func (b Book) GetTableOfContents() string {
+func (b *Book) GetTableOfContents() string {
 	tcs := b.Onix.CollateralDetail.TextContent
 	toc := ""
 	for _, tc := range tcs {
@@ -118,7 +118,7 @@ func (b Book) GetTableOfContents() string {
 }
 
 // GetPages returns Pages
-func (b Book) GetPages() (int, error) {
+func (b *Book) GetPages() (int, error) {
 	extents := b.Onix.DescriptiveDetail.Extent
 	if len(extents) > 0 {
 		pages, err := extents[0].ExtentValue.Int64()
