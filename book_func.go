@@ -6,23 +6,27 @@ import (
 	"time"
 )
 
-// IsValidData returns book has valid data
+// IsValidData validates book has valid data
 func (b Book) IsValidData() bool {
 	return b.GetISBN() != ""
 }
 
+// GetPublisher returns Publisher
 func (b Book) GetPublisher() string {
 	return b.Summary.Publisher
 }
 
+// GetISBN returns ISBN
 func (b Book) GetISBN() string {
 	return b.Summary.ISBN
 }
 
+// GetPubdateStr returns PubdateStr
 func (b Book) GetPubdateStr() string {
 	return b.Summary.Pubdate
 }
 
+// GetPubdate returns Pubdate
 func (b Book) GetPubdate() (d time.Time, err error) {
 	p := b.Summary.Pubdate
 	if p == "" {
@@ -42,27 +46,37 @@ func (b Book) GetPubdate() (d time.Time, err error) {
 	return
 }
 
+// GetTitle returns Title
 func (b Book) GetTitle() string {
 	return b.Summary.Title
 }
 
+// GetSeries returns Series
 func (b Book) GetSeries() string {
 	return b.Summary.Series
 }
 
+// GetAuthor returns Author
 func (b Book) GetAuthor() string {
 	return b.Summary.Author
 }
 
+// GetCover returns Cover
 func (b Book) GetCover() string {
 	return b.Summary.Cover
 }
 
+// GetVolume returns Volume
 func (b Book) GetVolume() string {
 	return b.Summary.Volume
 }
 
+// GetImageLink returns ImageLink
 func (b Book) GetImageLink() (l string) {
+	if b.Summary.Cover != "" {
+		l = b.Summary.Cover
+		return
+	}
 	srs := b.Onix.CollateralDetail.SupportingResource
 	if len(srs) == 0 {
 		return
@@ -76,6 +90,7 @@ func (b Book) GetImageLink() (l string) {
 	return
 }
 
+// GetDescription returns Description
 func (b Book) GetDescription() string {
 	tcs := b.Onix.CollateralDetail.TextContent
 	d := ""
@@ -90,6 +105,7 @@ func (b Book) GetDescription() string {
 	return d
 }
 
+// GetTableOfContents returns TableOfContents
 func (b Book) GetTableOfContents() string {
 	tcs := b.Onix.CollateralDetail.TextContent
 	toc := ""
@@ -99,4 +115,14 @@ func (b Book) GetTableOfContents() string {
 		}
 	}
 	return toc
+}
+
+// GetPages returns Pages
+func (b Book) GetPages() (int, error) {
+	extents := b.Onix.DescriptiveDetail.Extent
+	if len(extents) > 0 {
+		pages, err := extents[0].ExtentValue.Int64()
+		return int(pages), err
+	}
+	return 0, errors.New("no page data")
 }

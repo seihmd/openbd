@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 const tagName = "explain"
 
 const (
@@ -8,12 +10,14 @@ const (
 	textTypeToc         = "04"
 )
 
+// Book :struct to map whole response
 type Book struct {
 	Onix    `json:"onix"`    // JPRO-onix準拠項目
 	Hanmoto `json:"hanmoto"` // 版元ドットコム独自項目
 	Summary `json:"summary"` // 基本事項
 }
 
+// Onix :JPRO-onix準拠項目
 type Onix struct {
 	RecordReference   string // ISBNコード
 	ProductIdentifier struct {
@@ -28,8 +32,12 @@ type Onix struct {
 			MeasureUnitCode string
 			Measurement     string
 		}
-		ProductPart string // 付録情報
-		Collection  struct {
+		ProductPart []struct { // 付録情報
+			NumberOfItemsOfThisForm json.Number
+			ProductForm             string
+			ProductFormDescription  string
+		}
+		Collection struct {
 			TitleDetail struct { // シリーズ名/レーベル名
 				TitleType    string
 				TitleElement []struct {
@@ -59,7 +67,7 @@ type Onix struct {
 				Collationkey string // 照合キー
 			}
 			BiographicalNote string // 著者略歴
-			SequenceNumber   string
+			SequenceNumber   json.Number
 		}
 		Language []struct { // 言語
 			LanguageCode string
@@ -67,7 +75,7 @@ type Onix struct {
 			CountryCode  string
 		}
 		Extent []struct { // ページ数
-			ExtentValue string
+			ExtentValue json.Number
 			ExtentUnit  string
 			ExtentType  string
 		}
@@ -137,7 +145,7 @@ type Onix struct {
 			}
 			ProductAvailability string
 			Price               []struct { // 価格情報
-				PriceAmount  string
+				PriceAmount  json.Number
 				CurrencyCode string
 				PriceType    string
 			}
@@ -145,12 +153,12 @@ type Onix struct {
 	}
 }
 
+// Hanmoto :版元ドットコム独自項目
 type Hanmoto struct {
-	// 版元ドットコム独自項目
 	Dateshuppan    string     // 出版年月日
 	Datemodified   string     // 情報更新日時
 	Datecreated    string     // 情報作成日時
-	Lanove         string     // ライトノベルフラグ
+	Lanove         bool       // ライトノベルフラグ
 	Hasshohyo      string     // 書評データありフラグ
 	Hastameshiyomi bool       // ためしよみありフラグ
 	Reviews        []struct { // 書評情報
@@ -164,7 +172,7 @@ type Hanmoto struct {
 		Reviewer   string // 書評者
 		Link       string // リンク
 	}
-	// 版元ドットコム会員社独自項目
+	// 版元ドットコム会員社独自項目 ->
 	Genshomei                       string     // 原書名
 	Han                             string     // 版"` // 新版、改訂などの版次(エディショ
 	Datejuuhanyotei                 string     // 重版予定日
@@ -187,7 +195,7 @@ type Hanmoto struct {
 	Furoku                          string     // 付録
 	Furokusonota                    string     // 付録その他
 	Dokushakakikomi                 string     // 読者書き込み
-	Dokushakakikomipagesuu          string     // 読者書き込みページ数
+	Dokushakakikomipagesuu          int        // 読者書き込みページ数
 	Fuzokushiryounokangaikashidashi int        // 付属資料館外貸出 可=1,不可=2,館内のみ=3
 	Obinaiyou                       string     // 帯内容
 	Ruishokyougousho                string     // 類書・競合書
@@ -206,8 +214,10 @@ type Hanmoto struct {
 		Suri    int    // 刷り数
 		Comment string // 重版コメント
 	}
+	// 版元ドットコム会員社独自項目 <-
 }
 
+// Summary :使いやすい基本事項
 type Summary struct {
 	Publisher string
 	ISBN      string

@@ -31,3 +31,29 @@ func TestMapToBooks(t *testing.T) {
 		t.Errorf("books[2] isbn expect: 9784798031804 , actual: %s", isbn2)
 	}
 }
+
+func TestGet(t *testing.T) {
+	o := New()
+	for _, isbn := range test.ISBNs {
+		b, err := o.Get(isbn)
+		if err != nil {
+			t.Errorf("isbn: %s, msg: %s", isbn, err.Error())
+		} else if b.ISBN != isbn {
+			t.Errorf("different isbn code Book.ISBN: %s, expect: %s", b.ISBN, isbn)
+		}
+		// assert Getter make no panic
+		b.GetISBN()
+		b.GetPublisher()
+		b.GetPubdateStr()
+		b.GetPubdate()
+		b.GetTitle()
+		b.GetSeries()
+		b.GetAuthor()
+		b.GetCover()
+		b.GetVolume()
+		b.GetImageLink()
+		b.GetDescription()
+		b.GetTableOfContents()
+		b.GetPages()
+	}
+}

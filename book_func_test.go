@@ -52,7 +52,6 @@ func TestGetter(t *testing.T) {
 	expectCover := "http://example.com/xxx.jpg"
 	if b.GetCover() != expectCover {
 		t.Errorf(fmt.Sprintf("GetCover expect:%s actual:%s", expectCover, b.GetCover()))
-
 	}
 	expectVolume := "dummy_volume"
 	if b.GetVolume() != expectVolume {
@@ -60,7 +59,7 @@ func TestGetter(t *testing.T) {
 
 	}
 
-	expectImageLink := "https://example.com/yyy.jpg"
+	expectImageLink := "http://example.com/xxx.jpg"
 	if b.GetImageLink() != expectImageLink {
 		t.Errorf(fmt.Sprintf("GetImageLink expect:%s actual:%s", expectImageLink, b.GetImageLink()))
 	}
@@ -73,6 +72,15 @@ func TestGetter(t *testing.T) {
 	expectTOC := "dummy_toc"
 	if b.GetTableOfContents() != expectTOC {
 		t.Errorf(fmt.Sprintf("GetTableOfContents expect:%s actual:%s", expectTOC, b.GetTableOfContents()))
+	}
+
+	expectPages := 143
+	pages, err := b.GetPages()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	if pages != expectPages {
+		t.Errorf(fmt.Sprintf("GetPages expect: %d actual: %d", expectPages, pages))
 	}
 }
 

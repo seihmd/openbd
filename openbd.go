@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/seihmd/goisbn"
 )
 
 const (
@@ -23,19 +21,27 @@ const (
 
 var (
 	errNoData      = errors.New("ERROR: no data")
-	errUnmartial   = errors.New("ERROR: failed unmarshal json to book")
 	errInvalidISBN = errors.New("ERROR: invalid isbn code")
 	errRequest     = errors.New("ERROR: request error")
 	errOverGetMax  = errors.New("ERROR: isbns over 1000")
-	errOverPostMax = errors.New("ERROR: isbns over 10000")
 )
 
-func Get(isbn string) (Book, error) {
-	if !goisbn.IsISBN(isbn) {
-		return Book{}, errInvalidISBN
+// OpenBD has api request funcs
+type OpenBD struct {
+	client *http.Client
+}
+
+// New returns OpenBD
+func New() OpenBD {
+	return OpenBD{
+		client: http.DefaultClient,
 	}
+}
+
+// Get requests single Book data
+func (o OpenBD) Get(isbn string) (Book, error) {
 	u := createGetURL(isbn)
-	body, err := requestGet(u)
+	body, err := o.requestGet(u)
 	if err != nil {
 		return Book{}, errRequest
 	}
@@ -46,12 +52,13 @@ func Get(isbn string) (Book, error) {
 	return b, nil
 }
 
-func GetBooks(isbns []string) ([]Book, error) {
+// GetBooks requests multiple Book data
+func (o OpenBD) GetBooks(isbns []string) ([]Book, error) {
 	if len(isbns) > maxForGetRequest {
 		return nil, errOverGetMax
 	}
 	u := createISBNsURL(isbns)
-	body, err := requestGet(u)
+	body, err := o.requestGet(u)
 	if err != nil {
 		return nil, errRequest
 	}
@@ -62,17 +69,8 @@ func GetBooks(isbns []string) ([]Book, error) {
 	return b, nil
 }
 
-func createGetURL(isbn string) string {
-	return getAPI + "?isbn=" + isbn
-}
-
-func createISBNsURL(isbns []string) string {
-	param := strings.Join(isbns, ",")
-	return getAPI + "?isbn=" + param
-}
-
-func requestGet(url string) ([]byte, error) {
-	resp, err := http.DefaultClient.Get(url)
+func (o OpenBD) requestGet(url string) ([]byte, error) {
+	resp, err := o.client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -80,24 +78,28 @@ func requestGet(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-func mapToBook(response []byte) (Book, error) {
+func createGetURL(isbn string) string {
+	return getAPI + "?isbn=" + isbn
+}
+
+func createISBNsURL(isbns []string) string {
+	return getAPI + "?isbn=" + strings.Join(isbns, ",")
+}
+
+func mapToBook(response []byte) (b Book, err error) {
 	var books []Book
-	err := json.Unmarshal(response, &books)
-	if err != nil {
-		return Book{}, err
+	if err = json.Unmarshal(response, &books); err != nil {
+		return
 	}
-	b := books[0]
+	b = books[0]
 	if !b.IsValidData() {
-		return b, errNoData
+		err = errNoData
 	}
-	return b, nil
+	return
 }
 
 func mapToBooks(response []byte) ([]Book, error) {
 	var b []Book
 	err := json.Unmarshal(response, &b)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
+	return b, err
 }
